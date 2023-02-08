@@ -45,6 +45,7 @@ class MatchIntegrationTest {
         assertEquals(expectedMatch2(), actual);
     }
 
+
     @Test
     void read_matches_ok() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(get("/matches"))
@@ -53,11 +54,21 @@ class MatchIntegrationTest {
                 .getResponse();
         List<Match> actual = convertFromHttpResponse(response);
 
+        log.info(actual.toString());
         assertEquals(3, actual.size());
         assertTrue(actual.contains(expectedMatch2()));
-        //TODO: add these checks and its values
-        //assertTrue(actual.contains(expectedMatch1()));
-        //assertTrue(actual.contains(expectedMatch3()));
+        assertTrue(actual.contains(expectedMatch1()));
+        assertTrue(actual.contains(expectedMatch3()));
+    }
+
+    private static Match expectedMatch1() {
+        return Match.builder()
+                .id(1)
+                .teamA(teamMatchC())
+                .teamB(teamMatchD())
+                .stadium("S1")
+                .datetime(Instant.parse("2023-01-01T10:00:00Z"))
+                .build();
     }
 
     private static Match expectedMatch2() {
@@ -67,6 +78,67 @@ class MatchIntegrationTest {
                 .teamB(teamMatchB())
                 .stadium("S2")
                 .datetime(Instant.parse("2023-01-01T14:00:00Z"))
+                .build();
+    }
+
+    private Match expectedMatch3() {
+        return Match.builder()
+                .id(3)
+                .teamA(teamMatchE())
+                .teamB(teamMatchB())
+                .stadium("S3")
+                .datetime(Instant.parse("2023-01-01T18:00:00Z"))
+                .build();
+    }
+
+    private static TeamMatch teamMatchE() {
+        return TeamMatch.builder()
+                .team(team1())
+                .score(0)
+                .scorers(List.of())
+                .build();
+    }
+
+    private static TeamMatch teamMatchD() {
+        return TeamMatch.builder()
+                .team(team2())
+                .score(2)
+                .scorers(List.of(PlayerScorer.builder()
+                                .player(player2())
+                                .scoreTime(40)
+                                .isOG(true)
+                                .build(),
+                        PlayerScorer.builder()
+                                .player(player3())
+                                .scoreTime(50)
+                                .isOG(false)
+                                .build()))
+                .build();
+    }
+    private static TeamMatch teamMatchC() {
+        return TeamMatch.builder()
+                .team(team1())
+                .score(4)
+                .scorers(List.of(PlayerScorer.builder()
+                                .player(player1())
+                                .scoreTime(30)
+                                .isOG(false)
+                                .build(),
+                        PlayerScorer.builder()
+                                .player(player1())
+                                .scoreTime(20)
+                                .isOG(false)
+                                .build(),
+                        PlayerScorer.builder()
+                                .player(player1())
+                                .scoreTime(10)
+                                .isOG(false)
+                                .build(),
+                        PlayerScorer.builder()
+                                .player(player4())
+                                .scoreTime(60)
+                                .isOG(true)
+                                .build()))
                 .build();
     }
 
@@ -111,6 +183,15 @@ class MatchIntegrationTest {
                 .build();
     }
 
+    private static Player player4() {
+        return Player.builder()
+                .id(4)
+                .name("J4")
+                .teamName("E2")
+                .isGuardian(false)
+                .build();
+    }
+
     private static Player player3() {
         return Player.builder()
                 .id(3)
@@ -120,10 +201,35 @@ class MatchIntegrationTest {
                 .build();
     }
 
+    private static Player player2() {
+        return Player.builder()
+                .id(2)
+                .name("J2")
+                .teamName("E1")
+                .isGuardian(false)
+                .build();
+    }
+
+    private static Player player1() {
+        return Player.builder()
+                .id(1)
+                .name("J1")
+                .teamName(team1().getName())
+                .isGuardian(false)
+                .build();
+    }
+
     private static Team team2() {
         return Team.builder()
                 .id(2)
                 .name("E2")
+                .build();
+    }
+
+    private static Team team1() {
+        return Team.builder()
+                .id(1)
+                .name("E1")
                 .build();
     }
 
