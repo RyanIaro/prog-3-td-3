@@ -16,10 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @SpringBootTest(classes = FootApi.class)
 @AutoConfigureMockMvc
@@ -32,6 +30,7 @@ class PlayerIntegrationTest {
         return Player.builder()
                 .id(1)
                 .name("J1")
+                .teamName("E1")
                 .isGuardian(false)
                 .build();
     }
@@ -40,6 +39,7 @@ class PlayerIntegrationTest {
         return Player.builder()
                 .id(2)
                 .name("J2")
+                .teamName("E1")
                 .isGuardian(false)
                 .build();
     }
@@ -48,6 +48,7 @@ class PlayerIntegrationTest {
         return Player.builder()
                 .id(3)
                 .name("J3")
+                .teamName("E2")
                 .isGuardian(false)
                 .build();
     }
@@ -71,6 +72,7 @@ class PlayerIntegrationTest {
     @Test
     void create_players_ok() throws Exception {
         Player toCreate = Player.builder()
+                .id(1)
                 .name("Joe Doe")
                 .isGuardian(false)
                 .teamName("E1")
@@ -85,7 +87,33 @@ class PlayerIntegrationTest {
         List<Player> actual = convertFromHttpResponse(response);
 
         assertEquals(1, actual.size());
-        assertEquals(toCreate, actual.get(0).toBuilder().id(null).build());
+        assertEquals(toCreate, actual.get(0));
+    }
+
+    @Test
+    void update_player_ok() throws Exception{
+        Player updated = player1().toBuilder()
+                .name("J2")
+                .isGuardian(true)
+                .build();
+        mockMvc.perform(
+                post("/players")
+                        .content(objectMapper.writeValueAsString(List.of(player1())))
+                        .contentType("application/json")
+                        .accept("application/json"))
+                .andReturn();
+        MockHttpServletResponse response = mockMvc
+                .perform(put("/players")
+                        .content(objectMapper.writeValueAsString(List.of(updated)))
+                        .contentType("application/json")
+                        .accept("application/json"))
+                .andReturn()
+                .getResponse();
+        List<Player> actual = convertFromHttpResponse(response);
+
+        assertNotEquals(player1(), actual.get(0));
+        assertEquals(1, actual.size());
+        assertEquals(updated, actual.get(0));
     }
 
     private List<Player> convertFromHttpResponse(MockHttpServletResponse response)

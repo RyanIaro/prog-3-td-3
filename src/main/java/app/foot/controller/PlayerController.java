@@ -6,6 +6,7 @@ import app.foot.service.PlayerService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,4 +38,10 @@ public class PlayerController {
 
     //TODO: add PUT /players where you can modify the name and the guardian status of a player
     // Don't forget to add integration tests for this
+
+    @PutMapping("/players")
+    public Player putPlayer(@RequestBody Player updated) {
+        app.foot.model.Player domain = mapper.toDomain(updated);
+        return mapper.toRest(service.updatePlayer(domain));
+    }
 }

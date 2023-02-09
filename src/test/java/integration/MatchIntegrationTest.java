@@ -21,6 +21,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = FootApi.class)
@@ -54,11 +55,43 @@ class MatchIntegrationTest {
                 .getResponse();
         List<Match> actual = convertFromHttpResponse(response);
 
-        log.info(actual.toString());
         assertEquals(3, actual.size());
         assertTrue(actual.contains(expectedMatch2()));
         assertTrue(actual.contains(expectedMatch1()));
         assertTrue(actual.contains(expectedMatch3()));
+    }
+
+    @Test
+    void add_goals_ok() throws Exception{
+        List<PlayerScorer> scorers = List.of(PlayerScorer.builder()
+                        .player(player2())
+                        .scoreTime(40)
+                        .isOG(false)
+                        .build(),
+                PlayerScorer.builder()
+                        .player(player6())
+                        .scoreTime(80)
+                        .isOG(true)
+                        .build());
+        MockHttpServletResponse response = mockMvc.perform(post("/matches/3/goals")
+                        .content(objectMapper.writeValueAsString(scorers))
+                        .contentType("application/json")
+                        .accept("application/json"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+        List<Match> actual = convertFromHttpResponse(response);
+
+        assertTrue(actual.get(0).getTeamA().getScorers().containsAll(List.of(PlayerScorer.builder()
+                        .player(player2())
+                        .scoreTime(40)
+                        .isOG(false)
+                        .build(),
+                PlayerScorer.builder()
+                        .player(player6())
+                        .scoreTime(80)
+                        .isOG(true)
+                        .build())));
     }
 
     private static Match expectedMatch1() {
@@ -214,7 +247,7 @@ class MatchIntegrationTest {
         return Player.builder()
                 .id(1)
                 .name("J1")
-                .teamName(team1().getName())
+                .teamName("E1")
                 .isGuardian(false)
                 .build();
     }
